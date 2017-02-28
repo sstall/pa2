@@ -34,14 +34,17 @@ int main(int argc, char* argv[]) {
 				int pagesRequired = ceil((double)programSize / 4);
 
 				if(programSize <= 0) {
-					cout << "Error, invalid memory entry for Program " << addData << endl;
+					cout << "Error, Invalid memory entry for Program " << addData << endl;
 				}
 				else if(programSize > 128) {
-					cout << "Error, not enough memory for Program " << addData << endl;
+					cout << "Error, Not enough memory for Program " << addData << endl;
 				}
 				else {
 					if(l.addProgram(addData, pagesRequired, argv)) {
 						cout << "Program " << addData << " added successfully: " << pagesRequired << " page(s) used." << endl; 
+					}
+					else {
+						cout << "Error, Not enough memory for Program " << addData << endl;
 					}
 				}
 				break;
@@ -52,7 +55,7 @@ int main(int argc, char* argv[]) {
 
 				cout << "Program name - ";
 				cin >> removeData;
-				
+
 				l.removeProgram(removeData);
 				break;
 			}
@@ -125,7 +128,7 @@ int userInputInt() {
 		//Catches the exception if thrown by stoi
 		} catch(...) {
 			cin.ignore(100000, '\n');
-			cout << "ERROR: Input not an integer." << endl;
+			cout << "Error, Input not an integer." << endl;
 			return 0;
 		}
 	return inputI;

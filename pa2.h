@@ -61,6 +61,7 @@ void ProgramList::removeProgram(string &removeData) {
 	bool nodeExist = false;
 	int pages = 0;
 
+	//Loops until the next node is NULL, looking for any nodes with data that contains the program to be removed
 	while(curr != NULL) {
 
 		if(curr-> data == removeData) {
@@ -74,6 +75,7 @@ void ProgramList::removeProgram(string &removeData) {
 
 	}
 
+	//Prints out whether the program was found and if found, how many pages reclaimed
 	if(nodeExist && pages != 0) {
 		cout << "Program " << removeData << " successfully killed, " << pages << " page(s) reclaimed." << endl;
 	}
@@ -87,61 +89,66 @@ void ProgramList::removeProgram(string &removeData) {
 //Replaces a node, finding the place for it using the best or worst fit algotrithm
 bool ProgramList::addProgram(string addData, int pagesRequired, char* argv[]) {
 	curr = head;
-	int pages = 0;
-	int nodeIndex = 0;
+	int nodeIndexBegin = 0;
+	int countStart = 0;
+	int count = 1;
 
 	if(strcmp(argv[1], "worst") == 0) {
-		int spaceMax = 0;
-		int nodeIndexMax = 0;
-		while(curr != NULL) {
+		int nodeIndexWorst = 0;
+		int pagesMax = 0;
+		
+		while(curr-> next != NULL) {
+			//If the program already exists, prints error message and returns false
 			if(curr-> data == addData) {
-				cout << "Error, program " << addData << " already running." << endl;
+				cout << "Error, Program " << addData << " already running." << endl;
 				return false;
 			}
-			else if(curr-> data == "Free") {
-				nodeIndex++;
-				pages++;
-			}
-			else if(curr-> data != "Free") {
-				if(pages > spaceMax) {
-					spaceMax = pages;
-					nodeIndexMax = nodeIndex - pages + 1;
-					pages = 0;
-					nodeIndex++;
-					cout << spaceMax << "S";
-					cout << nodeIndexMax << "I";
-				}
-				else{
-					pages = 0;
-					nodeIndex++;
-				}
 
+			if(curr-> data == "Free") {
+				nodeIndexBegin = countStart;
+
+				while(curr-> data == "Free") {
+					if(curr-> next != NULL) {
+						count++;
+						countStart++;
+						curr = curr-> next;
+					}
+					else {
+						break;
+					}
+
+					if(count > pagesMax) {
+						pagesMax = count;
+						nodeIndexWorst = nodeIndexBegin;
+					}
+				}
+				count = 0;
 			}
-			curr = curr-> next;
+			else if(curr-> next != NULL) {
+				curr = curr-> next;
+				countStart++;
+			}
 		}
 
-		if(nodeIndexMax > 31) {
-			cout << "Error, not enough available memory for program " << addData << endl;
-			return false;
-		}
-			
-		curr = head;
-		if(spaceMax <= pagesRequired) {
-			for(int i = 0; i < nodeIndexMax; i++) {
+		if(pagesMax >= pagesRequired) {
+			curr = head;
+			for(int i = 0; i < nodeIndexWorst; i++) {
 				curr = curr-> next;
 			}
 			for(int i = 0; i < pagesRequired; i++) {
 				curr-> data = addData;
 				curr = curr-> next;
 			}
-
 			return true;
 		}
-	return false;
+		else {
+			return false;
+		}
 
 	}
 	else if(strcmp(argv[1], "best") == 0) {
-
+		int nodeIndexBest = 0;
+		int pagesMin = 32;
 	} 
 
 }
