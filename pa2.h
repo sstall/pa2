@@ -91,54 +91,53 @@ bool ProgramList::addProgram(string addData, int pagesRequired, char* argv[]) {
 	int nodeIndex = 0;
 
 	if(strcmp(argv[1], "worst") == 0) {
-			int spaceMax = 0;
-			int nodeIndexMax = 0;
-			while(curr != NULL) {
-				if(curr-> data == addData) {
-					cout << "Error, program " << addData << " already running." << endl;
-					return false;
-				}
-				else if(curr-> data == "Free") {
+		int spaceMax = 0;
+		int nodeIndexMax = 0;
+		while(curr != NULL) {
+			if(curr-> data == addData) {
+				cout << "Error, program " << addData << " already running." << endl;
+				return false;
+			}
+			else if(curr-> data == "Free") {
+				nodeIndex++;
+				pages++;
+			}
+			else if(curr-> data != "Free") {
+				if(pages > spaceMax) {
+					spaceMax = pages;
+					nodeIndexMax = nodeIndex - pages + 1;
+					pages = 0;
 					nodeIndex++;
-					pages++;
+					cout << spaceMax << "S";
+					cout << nodeIndexMax << "I";
 				}
-				else if(curr-> data != "Free") {
-					if(pages >= spaceMax) {
-						spaceMax = pages;
-						nodeIndexMax = nodeIndex - pages + 1;
-						pages = 0;
-						nodeIndex++;
-						cout << spaceMax << "S";
-						cout << nodeIndexMax << "I";
-					}
-					else{
-						pages = 0;
-						nodeIndex++;
-					}
+				else{
+					pages = 0;
+					nodeIndex++;
+				}
 
-				}
+			}
+			curr = curr-> next;
+		}
+
+		if(nodeIndexMax > 31) {
+			cout << "Error, not enough available memory for program " << addData << endl;
+			return false;
+		}
+			
+		curr = head;
+		if(spaceMax <= pagesRequired) {
+			for(int i = 0; i < nodeIndexMax; i++) {
+				curr = curr-> next;
+			}
+			for(int i = 0; i < pagesRequired; i++) {
+				curr-> data = addData;
 				curr = curr-> next;
 			}
 
-			if(nodeIndexMax > 31) {
-				cout << "Error, not enough available memory for program " << addData << endl;
-				return false;
-			}
-			
-			curr = head;
-			if(spaceMax <= pagesRequired) {
-				for(int i = 0; i < nodeIndexMax; i++) {
-					curr = curr-> next;
-				}
-
-				for(int i = 0; i < pagesRequired; i++) {
-					curr-> data = addData;
-					curr = curr-> next;
-				}
-
-				return true;
-			}
-		return false;
+			return true;
+		}
+	return false;
 
 	}
 	else if(strcmp(argv[1], "best") == 0) {
