@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
 
 	for(int i = 0; i < 32; i++) {
 		l.addNode("Free");
-	}
+	} 
 
 	int userChoice = 0;
 
@@ -24,29 +24,7 @@ int main(int argc, char* argv[]) {
 		switch(userChoice) {
 			//Add program
 			case 1: {
-				string addData;	
-				int programSize;
-	
-				cout << "Program name - ";
-				cin >> addData;
-				cout << "Program size (KB) - ";
-				programSize = userInputInt();
-				int pagesRequired = ceil((double)programSize / 4);
-
-				if(programSize <= 0) {
-					cout << "Error, Invalid memory entry for Program " << addData << endl;
-				}
-				else if(programSize > 128) {
-					cout << "Error, Not enough memory for Program " << addData << endl;
-				}
-				else {
-					if(l.addProgram(addData, pagesRequired, argv)) {
-						cout << "Program " << addData << " added successfully: " << pagesRequired << " page(s) used." << endl; 
-					}
-					else {
-						cout << "Error, Not enough memory for Program " << addData << endl;
-					}
-				}
+				menuAdd(l, argv);
 				break;
 			} 
 			//Kill program
@@ -61,7 +39,7 @@ int main(int argc, char* argv[]) {
 			}
 			//Fragmentation
 			case 3: {
-
+				cout << "There are " << l.fragments() << " fragment(s)." << endl;
 				break;
 			}
 			//Print memory
@@ -120,7 +98,7 @@ int userInputInt() {
 	int inputI = 0;
 	try {
 			cin >> inputS;
-			cout << std::endl;
+			cout << endl;
 
 			//Converts the character array into an int, throwing an exception if it wasn't able to
 			inputI = stoi(inputS,nullptr,0);
@@ -132,4 +110,31 @@ int userInputInt() {
 			return 0;
 		}
 	return inputI;
+}
+
+//Function for handling the input for program name and size and then calling the addProgram function on the ProgramList object
+void menuAdd(ProgramList &l, char* argv[]) {
+	string addData;	
+	int programSize;
+	
+	cout << "Program name - ";
+	cin >> addData;
+	cout << "Program size (KB) - ";
+	programSize = userInputInt();
+	int pagesRequired = ceil((double)programSize / 4);
+
+	if(programSize <= 0) {
+		cout << "Error, Invalid memory entry for Program " << addData << endl;
+	}
+	else if(programSize > 128) {
+		cout << "Error, Not enough memory for Program " << addData << endl;
+	}
+	else {
+		if(l.addProgram(addData, pagesRequired, argv)) {
+			cout << "Program " << addData << " added successfully: " << pagesRequired << " page(s) used." << endl; 
+		}
+		else {
+			cout << "Error, Not enough memory for Program " << addData << endl;
+		}
+	}
 }

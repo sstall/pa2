@@ -8,7 +8,9 @@
 
 using namespace std;
 
+class ProgramList;
 void programMode(int argc, char* argv[]);
+void menuAdd(ProgramList &l, char* argv[]);
 int mainMenu();
 int userInputInt();
 
@@ -27,6 +29,7 @@ public:
 	void addNode(string addData);
 	void removeProgram(string &removeData);
 	bool addProgram(string addData, int programSize, char* argv[]);
+	int fragments();
 	void printList();
 };
 
@@ -101,6 +104,7 @@ bool ProgramList::addProgram(string addData, int pagesRequired, char* argv[]) {
 			//If the program already exists, prints error message and returns false
 			if(curr-> data == addData) {
 				cout << "Error, Program " << addData << " already running." << endl;
+				curr = NULL;
 				return false;
 			}
 
@@ -139,18 +143,108 @@ bool ProgramList::addProgram(string addData, int pagesRequired, char* argv[]) {
 				curr-> data = addData;
 				curr = curr-> next;
 			}
+			curr = NULL;
 			return true;
 		}
 		else {
+			curr = NULL;
 			return false;
 		}
 
 	}
-	else if(strcmp(argv[1], "best") == 0) {
+	else {
 		int nodeIndexBest = 0;
 		int pagesMin = 32;
-	} 
+		count = 0;
 
+		while(curr-> next != NULL) {
+			
+			if(curr-> data == addData) {
+				cout << "Error, Program " << addData << " already running." << endl;
+				curr = NULL;
+				return false;
+			}
+
+			if(curr-> data == "Free") {
+
+				while(curr-> data == "Free") {
+
+					if(curr-> next != NULL) {
+						count++;
+						curr = curr-> next;
+						countStart++;
+					}
+					else {
+						break;
+					}
+
+				}
+
+				if(count >= pagesRequired) {
+
+					if(count < pagesMin) {
+						pagesMin = count;
+						nodeIndexBegin = countStart - count;
+						nodeIndexBest = nodeIndexBegin;
+					} 
+				}
+			}
+			else if(curr-> next != NULL) {
+				curr = curr->next;
+				countStart++;
+			}
+
+			count = 0;
+
+		}
+
+		if(pagesMin >= pagesRequired) {
+			curr = head;
+			for(int i = 0; i < nodeIndexBest; i++) {
+				curr = curr-> next;
+			}
+			for(int i = 0; i < pagesRequired; i++) {
+				curr-> data = addData;
+				curr = curr-> next;
+			}
+			curr = NULL;
+			return true;
+		}
+		else {
+			curr = NULL;
+			return false;
+		}
+
+	}
+
+}
+
+int ProgramList::fragments() {
+	curr = head;
+	int count = 0;
+
+	while(curr-> next != NULL) {
+
+		if(curr-> data != "Free") {
+			count++;
+
+			while(curr-> next != NULL)
+				if(curr-> data == "Free") {
+					break;
+				}
+				else {
+					curr = curr-> next;
+				}
+		}
+
+		if(curr-> next == NULL) {
+			break;
+		}
+
+		curr = curr-> next;
+	}
+
+	return count;
 }
 
 //Prints all data stored in the List
