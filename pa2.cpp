@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
 
 	programMode(argc, argv);
 
-	//Initializes Programlist, creating 32 nodes containing "Free" as the data
+	//Initializes Programlist, then creates 32 nodes containing "Free" as the data
 	ProgramList l;
 
 	for(int i = 0; i < 32; i++) {
@@ -58,6 +58,7 @@ int main(int argc, char* argv[]) {
 	return 0;
 }
 
+//Takes in the command line arguments and checks whether the proper arguments were provided, exiting the program if they were not
 void programMode(int argc, char* argv[]) {
 	cout << endl;
 
@@ -77,6 +78,7 @@ void programMode(int argc, char* argv[]) {
 	}
 }
 
+//Prints main menu, taking user input via the userInputInt function and checks that the input is a valid option
 int mainMenu() {
 
 	int inputI = 0;
@@ -85,7 +87,7 @@ int mainMenu() {
 		inputI = userInputInt();
 
 		if(inputI < 1 || inputI > 5) {
-			cout << "Invalid input." << endl;
+			cout << "Invalid input." << endl << endl;
 		}
 
 	}while((inputI < 1 || inputI > 5));
@@ -93,6 +95,8 @@ int mainMenu() {
 	return inputI;
 }
 
+//Takes in user input inside of the function, attempts to convert the string into an int, and returns the int if successful. If the input
+//was not of type int, an exception is thrown and caught and an error print out occurs.
 int userInputInt() {
 	string inputS;
 	int inputI = 0;
@@ -114,27 +118,27 @@ int userInputInt() {
 
 //Function for handling the input for program name and size and then calling the addProgram function on the ProgramList object
 void menuAdd(ProgramList &l, char* argv[]) {
-	string addData;	
+	string programName;	
 	int programSize;
 	
 	cout << "Program name - ";
-	cin >> addData;
+	cin >> programName;
 	cout << "Program size (KB) - ";
 	programSize = userInputInt();
 	int pagesRequired = ceil((double)programSize / 4);
 
 	if(programSize <= 0) {
-		cout << "Error, Invalid memory entry for Program " << addData << endl;
+		cout << "Error, Invalid memory entry for Program " << programName << endl << endl;
 	}
 	else if(programSize > 128) {
-		cout << "Error, Not enough memory for Program " << addData << endl;
+		cout << "Error, Not enough memory for Program " << programName << endl << endl;
 	}
 	else {
-		if(l.addProgram(addData, pagesRequired, argv)) {
-			cout << "Program " << addData << " added successfully: " << pagesRequired << " page(s) used." << endl; 
+		if(l.addProgram(programName, pagesRequired, argv)) {
+			cout << "Program " << programName << " added successfully: " << pagesRequired << " page(s) used." << endl; 
 		}
 		else {
-			cout << "Error, Not enough memory for Program " << addData << endl;
+			cout << "Error, Not enough memory for Program " << programName << endl;
 		}
 	}
 }
@@ -197,12 +201,13 @@ void ProgramList::removeProgram(string &removeData) {
 }
 
 //Replaces a node, finding the place for it using the best or worst fit algotrithm
-bool ProgramList::addProgram(string addData, int pagesRequired, char* argv[]) {
+bool ProgramList::addProgram(string &addData, int pagesRequired, char* argv[]) {
 	curr = head;
 	int nodeIndexBegin = 0;
 	int countStart = 0;
 	int count = 1;
 
+	//Finds the worst index for the program to be placed into 
 	if(strcmp(argv[1], "worst") == 0) {
 		int nodeIndexWorst = 0;
 		int pagesMax = 0;
@@ -241,6 +246,8 @@ bool ProgramList::addProgram(string addData, int pagesRequired, char* argv[]) {
 			}
 		}
 
+		//Adds the program to the list using the index found by the prior process if it will fit into what's available and then return true
+		//otherwise return false
 		if(pagesMax >= pagesRequired) {
 			curr = head;
 			for(int i = 0; i < nodeIndexWorst; i++) {
@@ -259,13 +266,14 @@ bool ProgramList::addProgram(string addData, int pagesRequired, char* argv[]) {
 		}
 
 	}
+	//Finds the best index for the program to be placed into
 	else {
 		int nodeIndexBest = 0;
 		int pagesMin = 32;
 		count = 0;
 
 		while(curr-> next != NULL) {
-			
+			//If the program already exists, prints error message and returns false
 			if(curr-> data == addData) {
 				cout << "Error, Program " << addData << " already running." << endl;
 				curr = NULL;
@@ -305,6 +313,8 @@ bool ProgramList::addProgram(string addData, int pagesRequired, char* argv[]) {
 
 		}
 
+		//Adds the program to the list using the index found by the prior process if it will fit into what's available and then return true
+		//otherwise return false
 		if(pagesMin >= pagesRequired) {
 			curr = head;
 			for(int i = 0; i < nodeIndexBest; i++) {
@@ -355,7 +365,7 @@ int ProgramList::fragments() {
 	return count;
 }
 
-//Prints all data stored in the List
+//Prints all data stored in the List in 4 by 8 formatting 
 void ProgramList::printList() {
 	curr = head;
 
