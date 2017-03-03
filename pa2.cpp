@@ -83,12 +83,23 @@ int mainMenu() {
 
 	int inputI = 0;
 	do{
+		cout << endl;
 		cout << "1. Add Program \n2. Kill Program \n3. Fragmentation \n4. Print memory \n5. Exit \n" << endl;
-		inputI = userInputInt();
+		
+		try{
+			inputI = userInputInt();
+		}
+		catch(...) {
+			cin.ignore(100000, '\n');
+			cout << "Error, Input not an integer." << endl;
+			return 0;
+		}
 
 		if(inputI < 1 || inputI > 5) {
-			cout << "Invalid input." << endl << endl;
+			cout << "Invalid input." << endl;
 		}
+
+
 
 	}while((inputI < 1 || inputI > 5));
 
@@ -96,23 +107,17 @@ int mainMenu() {
 }
 
 //Takes in user input inside of the function, attempts to convert the string into an int, and returns the int if successful. If the input
-//was not of type int, an exception is thrown and caught and an error print out occurs.
+//was not of type int, an exception is thrown and caught in the method that called userInputInt()
 int userInputInt() {
 	string inputS;
 	int inputI = 0;
-	try {
-			cin >> inputS;
-			cout << endl;
+	cin >> inputS;
+	cout << endl;
 
-			//Converts the character array into an int, throwing an exception if it wasn't able to
-			inputI = stoi(inputS,nullptr,0);
+	//Converts the character array into an int, throwing an exception if it wasn't able to
+	inputI = stoi(inputS,nullptr,0);
 
-		//Catches the exception if thrown by stoi
-		} catch(...) {
-			cin.ignore(100000, '\n');
-			cout << "Error, Input not an integer." << endl;
-			return 0;
-		}
+		
 	return inputI;
 }
 
@@ -124,22 +129,26 @@ void menuAdd(ProgramList &l, char* argv[]) {
 	cout << "Program name - ";
 	cin >> programName;
 	cout << "Program size (KB) - ";
-	programSize = userInputInt();
-	int pagesRequired = ceil((double)programSize / 4);
+	//Takes input via the userInputInt() method, if anything but an int was inputted, an exception is thrown by the method and caught by the catch statement here
+	try {
+		programSize = userInputInt();
+		int pagesRequired = ceil((double)programSize / 4);
 
-	if(programSize <= 0) {
-		cout << "Error, Invalid memory entry for Program " << programName << endl << endl;
-	}
-	else if(programSize > 128) {
-		cout << "Error, Not enough memory for Program " << programName << endl << endl;
-	}
-	else {
-		if(l.addProgram(programName, pagesRequired, argv)) {
-			cout << "Program " << programName << " added successfully: " << pagesRequired << " page(s) used." << endl; 
+		//Checks if memory inputs are in bounds
+		if(programSize <= 0) {
+			cout << "Error, Invalid memory entry for Program " << programName << endl;
 		}
-		else {
+		else if(programSize > 128) {
 			cout << "Error, Not enough memory for Program " << programName << endl;
 		}
+		else {
+			if(l.addProgram(programName, pagesRequired, argv)) {
+				cout << "Program " << programName << " added successfully: " << pagesRequired << " page(s) used." << endl; 
+			}
+		}
+	}
+	catch(...) {
+		cout << "Error, Memory input not an integer." << endl;
 	}
 }
 
@@ -204,7 +213,7 @@ void ProgramList::removeProgram(string &removeData) {
 bool ProgramList::addProgram(string &addData, int pagesRequired, char* argv[]) {
 	curr = head;
 	int nodeIndexBegin = 0;
-	int countStart = 0;
+	int index = 0;
 	int count = 1;
 
 	//Finds the worst index for the program to be placed into 
@@ -221,12 +230,12 @@ bool ProgramList::addProgram(string &addData, int pagesRequired, char* argv[]) {
 			}
 
 			if(curr-> data == "Free") {
-				nodeIndexBegin = countStart;
+				nodeIndexBegin = index;
 
 				while(curr-> data == "Free") {
 					if(curr-> next != NULL) {
 						count++;
-						countStart++;
+						index++;
 						curr = curr-> next;
 					}
 					else {
@@ -242,7 +251,19 @@ bool ProgramList::addProgram(string &addData, int pagesRequired, char* argv[]) {
 			}
 			else if(curr-> next != NULL) {
 				curr = curr-> next;
-				countStart++;
+				index++;
+
+				//Catch edge case when at the end of the list to check if the last index is Free or not
+				if(curr-> data == "Free" && curr-> next == NULL) {
+					nodeIndexBegin = index;
+					count++;
+					index++;
+
+					if(count > pagesMax) {
+						pagesMax = count;
+						nodeIndexWorst = nodeIndexBegin;
+					} 
+				} 
 			}
 		}
 
@@ -262,6 +283,7 @@ bool ProgramList::addProgram(string &addData, int pagesRequired, char* argv[]) {
 		}
 		else {
 			curr = NULL;
+			cout << "Error, Not enough memory for Program " << addData << endl;
 			return false;
 		}
 
@@ -286,8 +308,8 @@ bool ProgramList::addProgram(string &addData, int pagesRequired, char* argv[]) {
 
 					if(curr-> next != NULL) {
 						count++;
+						index++;
 						curr = curr-> next;
-						countStart++;
 					}
 					else {
 						break;
@@ -299,16 +321,31 @@ bool ProgramList::addProgram(string &addData, int pagesRequired, char* argv[]) {
 
 					if(count < pagesMin) {
 						pagesMin = count;
-						nodeIndexBegin = countStart - count;
+						nodeIndexBegin = index - count;
 						nodeIndexBest = nodeIndexBegin;
 					} 
 				}
+
 			}
 			else if(curr-> next != NULL) {
 				curr = curr->next;
-				countStart++;
-			}
+				index++;
 
+				//Catch edge case when at the end of the list to check if the last index is Free or not
+				if(curr-> data == "Free" && curr-> next == NULL) {
+					count++;
+					index++;
+
+					if(count >= pagesRequired) {
+
+						if(count < pagesMin) {
+							pagesMin = count;
+							nodeIndexBegin = index - count;
+							nodeIndexBest = nodeIndexBegin;
+						} 
+					}
+				} 
+			}
 			count = 0;
 
 		}
@@ -321,14 +358,22 @@ bool ProgramList::addProgram(string &addData, int pagesRequired, char* argv[]) {
 				curr = curr-> next;
 			}
 			for(int i = 0; i < pagesRequired; i++) {
-				curr-> data = addData;
-				curr = curr-> next;
+				//Catch edge case if the entire memory is filled and the index is invalid
+				if(curr-> data == "Free") {
+					curr-> data = addData;
+					curr = curr-> next;
+				}
+				else {
+					cout << "Error, Not enough memory for Program " << addData << endl;
+					return false;
+				}
 			}
 			curr = NULL;
 			return true;
 		}
 		else {
 			curr = NULL;
+			cout << "Error, Not enough memory for Program " << addData << endl;
 			return false;
 		}
 
@@ -354,12 +399,17 @@ int ProgramList::fragments() {
 					curr = curr-> next;
 				}
 		}
+		else {
+			curr = curr-> next;
 
-		if(curr-> next == NULL) {
-			break;
+			//Check edge case of a program being in the last memory slot
+			if(curr-> next == NULL) {
+				if(curr-> data != "Free") {
+					count++;
+				}
+				break;
+			}
 		}
-
-		curr = curr-> next;
 	}
 
 	return count;

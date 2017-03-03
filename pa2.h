@@ -1,6 +1,9 @@
 //pa2.h
 //Contians all method, class, and class function declarations for pa2.cpp
 
+#ifndef pa2
+#define pa2
+
 #include "stdio.h"
 #include <stdlib.h>
 #include <string.h>
@@ -34,4 +37,4 @@ public:
 	void printList();
 };
 
-
+#endif
